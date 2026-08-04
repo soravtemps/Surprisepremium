@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>A Little Surprise 💕</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Dancing+Script:wght@500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     ✏️  EDIT ME  — everything a person will want to personalize
+     is collected in the CONFIG object near the top of the <script>
+     at the bottom of this file. Scroll down to "CONFIG" to edit:
+     name, secret code, photos, quiz, letter text, colors, music.
+     ============================================================ */
+
+  :root{
+    --ink:#7a1f3d;
+    --ink-soft:#9c4767;
+    --rose-050:#fff5f8;
+    --rose-100:#ffe4ec;
+    --rose-200:#ffd1e0;
+    --rose-400:#f79bb9;
+    --rose-600:#e0518f;
+    --rose-700:#c53d78;
+    --gold-400:#e8c76a;
+    --gold-600:#c99a2e;
+    --paper:#fffaf7;
+    --shadow: 0 20px 45px -20px rgba(122,31,61,.45);
+    font-size: 16px;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    background: radial-gradient(120% 120% at 50% 0%, #ffeef3 0%, #ffd7e3 55%, #ffc3d6 100%);
+    color:var(--ink);
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* Phone-like stage so it always feels like a "story" experience,
+     but stretches to fill on real mobile screens */
+  #stage{
+    position:relative;
+    width:100%;
+    max-width:480px;
+    height:100vh;
+    max-height:960px;
+    background:linear-gradient(180deg,var(--rose-050),var(--rose-100));
+    overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  @media (min-width:481px){
+    #stage{ border-radius:32px; height:92vh; margin:4vh 0; }
+  }
+
+  /* ---------- top chrome: progress dots + controls ---------- */
+  #chrome{
+    position:absolute; top:0; left:0; right:0; z-index:50;
+    padding:14px 16px 10px;
+    display:flex; flex-direction:column; gap:10px;
+    pointer-events:none;
+  }
+  #dots{
+    display:flex; gap:5px;
+  }
+  #dots span{
+    flex:1; height:3px; border-radius:3px;
+    background:rgba(122,31,61,.15);
+    overflow:hidden; position:relative;
+  }
+  #dots span i{
+    display:block; height:100%; width:0%;
+    background:var(--ink); border-radius:3px;
+    transition:width .25s ease;
+  }
+  #dots span.done i{ width:100%; }
+
+  #topbtns{
+    display:flex; justify-content:flex-end; gap:10px;
+    pointer-events:auto;
+  }
+  .chip-btn{
+    width:38px; height:38px; border-radius:50%;
+    border:none; background:rgba(224,81,143,.16);
+    color:var(--rose-700); font-size:16px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .chip-btn.play{ background:var(--rose-600); color:#fff; box-shadow:0 8px 18px -6px rgba(224,81,143,.7); }
+
+  /* ---------- slides ---------- */
+  #slides{ position:relative; width:100%; height:100%; }
+  .slide{
+    position:absolute; inset:0;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    padding:78px 26px 30px;
+    text-align:center;
+    overflow-y:auto;
+  }
+  .slide.active{ display:flex; animation:fadeUp .5s ease both; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:translateY(0)} }
+
+  .eyebrow{
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--rose-700); font-weight:600; margin-bottom:8px;
+  }
+  h1.title{
+    font-family:'Playfair Display',serif; font-weight:700;
+    font-size:1.9rem; margin:0 0 6px; color:var(--ink); line-height:1.15;
+  }
+  .script{
+    font-family:'Dancing Script',cursive; font-weight:700;
+    color:var(--rose-700);
+  }
+  .sub{ color:var(--ink-soft); font-size:.95rem; margin:0 0 18px; }
+
+  .btn{
+    appearance:none; border:none; cursor:pointer;
+    font-family:'Poppins',sans-serif; font-weight:600; font-size:1rem;
+    padding:15px 30px; border-radius:999px;
+    background:linear-gradient(135deg,var(--rose-600),var(--rose-700));
+    color:#fff; box-shadow:0 14px 28px -12px rgba(197,61,120,.65);
+    display:inline-flex; align-items:center; gap:8px;
+    transition:transform .15s ease;
+  }
+  .btn:active{ transform:scale(.96); }
+  .btn.ghost{
+    background:#fff; color:var(--rose-700); border:2px solid var(--rose-200);
+    box-shadow:none;
+  }
+  .btn.small{ padding:10px 20px; font-size:.85rem; }
+  .btn[disabled]{ opacity:.45; pointer-events:none; }
+
+  .row{ display:flex; gap:12px; }
+
+  /* ---------- 0. lock / code entry ---------- */
+  .keypad{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+    width:100%; max-width:300px; margin-top:26px;
+    background:var(--rose-600); padding:22px; border-radius:26px;
+    box-shadow:var(--shadow);
+  }
+  .keypad button{
+    aspect-ratio:1; border:none; border-radius:50%;
+    background:rgba(255,255,255,.92); color:var(--rose-700);
+    font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:600;
+    cursor:pointer;
+  }
+  .keypad button:active{ background:#fff; }
+  .keypad button.wide{ background:transparent; color:#fff; font-size:1.1rem; }
+  .code-dots{ display:flex; gap:14px; margin:22px 0 6px; }
+  .code-dots i{
+    width:16px; height:16px; border-radius:6px; display:block;
+    border:2px solid var(--rose-400); background:transparent;
+  }
+  .code-dots i.filled{ background:var(--rose-700); border-color:var(--rose-700); }
+  .code-hint{ color:var(--ink-soft); font-size:.82rem; margin-top:4px; }
+  .lock-art{ font-size:64px; margin-top:8px; }
+
+  /* ---------- excited yes/no ---------- */
+  .bounce-emoji{ font-size:5.2rem; margin:18px 0 10px; animation:bob 2.4s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .card{
+    background:#fff; border-radius:26px; padding:34px 24px;
+    box-shadow:var(--shadow); width:100%; max-width:340px;
+    margin-top:10px;
+  }
+
+  /* ---------- quiz ---------- */
+  .hearts-row{ display:flex; gap:8px; margin-bottom:22px; }
+  .hearts-row span{ font-size:1.3rem; color:var(--rose-200); }
+  .hearts-row span.on{ color:var(--rose-700); }
+  .q-card{
+    background:#fff; border-radius:20px; padding:22px 20px;
+    box-shadow:var(--shadow); width:100%;
+    border-top:5px solid var(--rose-700);
+    margin-bottom:20px;
+  }
+  .q-label{ font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:#c9a2b3; margin-bottom:8px; }
+  .q-text{ font-family:'Playfair Display',serif; font-weight:700; font-size:1.25rem; color:var(--ink); }
+  .opt{
+    width:100%; text-align:left; background:rgba(224,81,143,.08);
+    border:2px solid transparent; border-radius:16px;
+    padding:15px 16px; margin-bottom:12px; cursor:pointer;
+    display:flex; align-items:center; gap:12px;
+    font-family:'Poppins',sans-serif; font-weight:500; color:var(--ink);
+    font-size:.95rem;
+  }
+  .opt .badge{
+    width:30px; height:30px; border-radius:50%; background:#f3d2de;
+    color:var(--rose-700); font-weight:700; display:flex; align-items:center;
+    justify-content:center; flex-shrink:0; font-size:.85rem;
+  }
+  .opt.correct{ border-color:#3fa15e; background:rgba(63,161,94,.12); }
+  .opt.correct .badge{ background:#3fa15e; color:#fff; }
+  .opt.wrong{ border-color:#e35555; background:rgba(227,85,85,.1); }
+  .opt.wrong .badge{ background:#e35555; color:#fff; }
+  .feedback{ font-family:'Dancing Script',cursive; font-size:1.4rem; color:var(--rose-700); font-weight:700; min-height:1.6em; }
+
+  /* ---------- polaroid ---------- */
+  .cake-emoji{ font-size:3rem; }
+  .polaroid{
+    background:#fff; padding:14px 14px 44px; border-radius:6px;
+    box-shadow:var(--shadow); max-width:300px; width:100%;
+    transform:rotate(-2deg); margin:16px auto 8px;
+  }
+  .polaroid img{ width:100%; display:block; border-radius:2px; aspect-ratio:3/4; object-fit:cover; background:linear-gradient(135deg,#eec6d6,#f3a6c4); }
+  .polaroid figcaption{
+    font-family:'Dancing Script',cursive; font-size:1.3rem; color:var(--rose-700);
+    text-align:center; margin-top:10px; font-weight:700;
+  }
+
+  /* ---------- scratch card ---------- */
+  .scratch-wrap{ position:relative; width:100%; max-width:280px; margin:18px auto 10px; }
+  .scratch-under{
+    width:100%; aspect-ratio:3/4; border-radius:18px; overflow:hidden;
+    background:linear-gradient(135deg,#eec6d6,#f3a6c4);
+  }
+  .scratch-under img{ width:100%; height:100%; object-fit:cover; }
+  canvas#scratchCanvas{
+    position:absolute; inset:0; border-radius:18px; touch-action:none; cursor:grab;
+  }
+  .progress-track{ width:100%; max-width:280px; height:6px; border-radius:6px; background:rgba(122,31,61,.14); margin-top:16px; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--rose-600),var(--gold-600)); transition:width .1s linear; }
+  .progress-pct{ font-size:.8rem; color:var(--ink-soft); margin-top:6px; }
+
+  /* ---------- candles ---------- */
+  .cake-scene{ position:relative; margin:30px 0 10px; width:100%; display:flex; flex-direction:column; align-items:center; }
+  .candles{ display:flex; gap:10px; margin-bottom:-8px; z-index:2; }
+  .candle{ width:8px; height:46px; border-radius:4px; position:relative; }
+  .candle .flame{
+    position:absolute; top:-20px; left:50%; transform:translateX(-50%);
+    width:14px; height:20px; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+    background:radial-gradient(circle at 50% 30%, #fff6c8, #ffb84d 55%, #ff6a3d 90%);
+    animation:flicker 1.4s ease-in-out infinite;
+  }
+  .candle.out .flame{ display:none; }
+  @keyframes flicker{ 0%,100%{ transform:translateX(-50%) scale(1) } 50%{ transform:translateX(-45%) scale(.9) } }
+  .cake{ font-size:7.5rem; line-height:1; }
+  .blow-hint{ color:var(--ink-soft); font-size:.85rem; margin-top:18px; }
+
+  /* ---------- balloons ---------- */
+  .balloon-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:26px 30px;
+    width:100%; max-width:300px; margin:26px auto 10px;
+  }
+  .balloon-slot{ display:flex; flex-direction:column; align-items:center; }
+  .balloon{
+    width:76px; height:92px; border-radius:50% 50% 50% 50% / 55% 55% 45% 45%;
+    cursor:pointer; position:relative;
+    box-shadow: inset -10px -10px 18px rgba(0,0,0,.12), inset 8px 10px 16px rgba(255,255,255,.35);
+    transition:transform .18s ease;
+  }
+  .balloon:active{ transform:scale(1.06); }
+  .balloon::after{ content:''; position:absolute; bottom:-14px; left:50%; width:2px; height:16px; background:#c98; transform:translateX(-50%); }
+  .balloon.pop{ animation:pop .25s ease forwards; }
+  @keyframes pop{ to{ transform:scale(1.6); opacity:0 } }
+  .word-card{
+    width:76px; height:92px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+    font-family:'Dancing Script',cursive; font-weight:700; font-size:1.3rem;
+    background:#fff; box-shadow:var(--shadow); opacity:0; transform:scale(.5);
+  }
+  .word-card.show{ animation:pop-in .35s ease forwards; }
+  @keyframes pop-in{ to{ opacity:1; transform:scale(1) } }
+  .final-phrase{ font-family:'Dancing Script',cursive; font-size:1.9rem; color:var(--rose-700); font-weight:700; margin-top:8px; min-height:1.4em; }
+
+  /* ---------- wish (dark) ---------- */
+  .dark-slide{ background:#12060c; color:#fff; }
+  .dark-slide .sub{ color:#e7c3d1; }
+  .wish-heart{ font-size:2.6rem; margin-top:14px; animation:pulseHeart 1.6s ease-in-out infinite; }
+  @keyframes pulseHeart{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.18) } }
+
+  /* ---------- heart meter ---------- */
+  .meter-banner{
+    width:100%; border:2px dashed rgba(255,255,255,.6); border-radius:16px;
+    background:linear-gradient(135deg,var(--rose-600),var(--rose-700));
+    color:#fff; padding:14px 10px; margin-top:6px;
+  }
+  .meter-banner .h{ font-family:'Playfair Display',serif; font-weight:700; letter-spacing:.08em; font-size:1.2rem; }
+  .meter-banner .s{ font-size:.78rem; opacity:.9; margin-top:4px; }
+  .heart-card{ background:#fff; border-radius:22px; padding:26px 20px; margin-top:20px; box-shadow:var(--shadow); width:100%; }
+  .heart-pct{ font-size:2.1rem; font-weight:700; color:var(--rose-700); font-family:'Poppins',sans-serif; }
+  .big-heart{ position:relative; width:190px; height:170px; margin:14px auto 6px; }
+  .big-heart svg{ width:100%; height:100%; }
+  .heart-msg{ color:var(--rose-700); font-weight:600; font-size:.9rem; margin-top:6px; }
+  .tap-heart-btn{
+    width:88px; height:88px; border-radius:50%; border:none; margin-top:22px;
+    background:radial-gradient(circle at 35% 30%, var(--rose-400), var(--rose-700));
+    color:#fff; font-size:2rem; box-shadow:0 16px 30px -12px rgba(197,61,120,.7);
+    cursor:pointer;
+  }
+  .tap-heart-btn:active{ transform:scale(.92); }
+  .keep-tapping{ font-size:.82rem; color:var(--ink-soft); margin-top:10px; }
+
+  /* ---------- envelope ---------- */
+  .env-wrap{ margin-top:60px; }
+  .envelope{ width:220px; height:150px; position:relative; margin:0 auto; cursor:pointer; }
+  .env-body{ position:absolute; inset:0; background:linear-gradient(160deg,#fff,#ffe0ec); border-radius:8px; box-shadow:var(--shadow); }
+  .env-flap{
+    position:absolute; top:0; left:0; right:0; height:76px;
+    background:linear-gradient(160deg,var(--rose-200),var(--rose-400));
+    clip-path:polygon(0 0,100% 0,50% 100%);
+    transform-origin:top center; transition:transform .5s ease;
+  }
+  .envelope.open .env-flap{ transform:rotateX(180deg); }
+  .seal{
+    position:absolute; top:56px; left:50%; transform:translate(-50%,-50%);
+    width:46px; height:46px; border-radius:50%; background:var(--ink);
+    color:var(--gold-400); display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem; z-index:3; box-shadow:0 6px 14px rgba(0,0,0,.25);
+  }
+  .env-tap-hint{ margin-top:26px; font-family:'Playfair Display',serif; font-style:italic; color:var(--ink-soft); }
+
+  /* ---------- letter ---------- */
+  .letter-paper{
+    background:var(--paper); border-radius:14px; padding:26px 22px;
+    box-shadow:var(--shadow); width:100%; text-align:left;
+    font-family:'Dancing Script',cursive; font-size:1.18rem; line-height:1.55;
+    color:#5e2a3d; max-height:56vh; overflow-y:auto; margin-top:8px;
+  }
+  .letter-paper .line{ text-align:center; margin:10px 0; color:var(--rose-700); }
+
+  /* ---------- memories carousel ---------- */
+  .mem-count{
+    background:#fff; border-radius:999px; padding:6px 16px; font-size:.8rem;
+    font-weight:600; color:var(--rose-700); box-shadow:0 6px 14px -6px rgba(122,31,61,.3);
+    margin-bottom:14px;
+  }
+  .polaroid.mem{ transform:rotate(0); }
+  .swipe-hint{ font-size:.85rem; color:var(--ink-soft); margin:14px 0 8px; }
+  .dots-mini{ display:flex; gap:6px; justify-content:center; margin-bottom:16px; flex-wrap:wrap; max-width:220px; }
+  .dots-mini i{ width:6px; height:6px; border-radius:50%; background:var(--rose-200); }
+  .dots-mini i.on{ background:var(--rose-700); width:18px; border-radius:4px; }
+  .nav-row{ display:flex; gap:12px; width:100%; max-width:320px; margin-top:auto; }
+  .nav-row .btn{ flex:1; justify-content:center; }
+
+  /* ---------- video unlock ---------- */
+  .video-slide{ background:#000; color:#fff; justify-content:center; }
+  .video-box{
+    width:100%; aspect-ratio:9/16; max-height:52vh; border-radius:16px;
+    background:linear-gradient(135deg,#241019,#3a0e20); position:relative;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    margin-bottom:20px;
+  }
+  .play-circle{
+    width:76px; height:76px; border-radius:50%; background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.5); display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:1.6rem; cursor:pointer;
+  }
+  .video-bottom{ display:flex; justify-content:space-between; align-items:center; width:100%; max-width:340px; }
+  .lock-tag{ font-size:.82rem; color:#e8bccf; }
+
+  /* ---------- final ---------- */
+  .final-heart{ font-size:2.6rem; color:var(--rose-700); }
+  .final-card{
+    background:var(--paper); border-radius:16px; padding:26px 22px; box-shadow:var(--shadow);
+    width:100%; text-align:left; font-family:'Dancing Script',cursive; font-size:1.15rem;
+    line-height:1.5; color:#5e2a3d; margin-top:6px;
+  }
+  .made-with{ margin-top:16px; font-size:.78rem; color:#c98aa4; }
+
+  ::-webkit-scrollbar{ width:0; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="chrome">
+    <div id="dots"></div>
+    <div id="topbtns">
+      <button class="chip-btn play" id="musicBtn" aria-label="toggle music">❚❚</button>
+      <button class="chip-btn" id="closeBtn" aria-label="restart">✕</button>
+    </div>
+  </div>
+
+  <div id="slides"></div>
+</div>
+
+<audio id="bgAudio" loop></audio>
+
+<script type="module">
+/* ============================================================
+   # YEH NAYA HISSA HAI — ISI SE WEBSITE KA DATA YAHAN AATA HAI #
+   Jab customer main website (Sorav Temps store) pe apna naam,
+   photos, message, aur music select karke "Generate Link" dabata
+   hai, toh us data ka ek record Firebase (Firestore) ke "cards"
+   collection mein save hota hai, aur customer ko ek link milta
+   hai jaisa: isi-file.html?id=XXXXXXX
+
+   Yeh neeche wala code us "id" ko URL se padhta hai, Firestore se
+   uska data mangta hai, aur CONFIG object ki default values ko
+   us real data se replace kar deta hai — isliye jo bhi website pe
+   bhara jaaye, wahi yahan customer ko dikhta hai.
+
+   ISKO CHHEDNE KI ZAROORAT NAHI — bas neeche CONFIG mein jo
+   default text hai (jab koi "id" na ho, ya preview dekhne ke
+   liye) usko chaho toh badal sakte ho.
+   ============================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+// Yeh EXACT wahi Firebase settings hain jo main website (Sorav Temps
+// store) mein hain — dono ek hi "cards" collection share karte hain,
+// isliye yeh values waisi hi rehni chahiye.
+const firebaseConfig = {
+  apiKey: "AIzaSyCRAO7UDddkFKvKbGGBBtkruD22NZnNozU",
+  authDomain: "soravtemps-d5419.firebaseapp.com",
+  projectId: "soravtemps-d5419",
+  storageBucket: "soravtemps-d5419.firebasestorage.app",
+  messagingSenderId: "889624784593",
+  appId: "1:889624784593:web:3a325467962639facedff0"
+};
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
+/* =====================================================================
+   ✏️  CONFIG — replace everything in here with the real surprise
+   (yeh sirf DEFAULT / preview values hain — asli data upar wale
+   Firebase fetch se in values ko override kar dega jab link ke
+   saath ?id=... aaye)
+   ===================================================================== */
+const CONFIG = {
+  personName: "Aditi",
+  from: "Your Bestie",
+  secretCode: "1403",              // 4-digit code for the lock screen
+  musicSrc: "",                     // optional: URL to a background mp3
+
+  introPhoto: "",                   // main "Happy Birthday" polaroid photo URL
+  scratchPhoto: "",                 // photo revealed under the scratch card
+
+  quiz: [
+    { q: "Who is the prettiest person in the world?",
+      options: ["Celebrity","Influencer","You","Nobody"], correct: 2 },
+    { q: "What makes me smile instantly?",
+      options: ["Funny Memes","Good Food","Your Message","Music"], correct: 2 },
+    { q: "Where do we always end up hanging out?",
+      options: ["Our Favourite Café","The Mall","College Canteen","Home"], correct: 0 },
+    { q: "What's my go-to comfort food?",
+      options: ["Pizza","Momos","Ice Cream","Maggi"], correct: 2 },
+    { q: "What's one word for our friendship?",
+      options: ["Forever","Chaotic","Unbreakable","All of the above"], correct: 3 }
+  ],
+
+  balloonWords: ["You", "Are", "So", "Special"],
+
+  memories: [
+    { photo:"", caption:"Every second with you is a gift 💕" },
+    { photo:"", caption:"This one is my favourite 🌸" },
+    { photo:"", caption:"Chaos, but make it cute 🤍" },
+    { photo:"", caption:"Pure magic, nothing less 💖" },
+    { photo:"", caption:"That trip we still talk about ✨" },
+    { photo:"", caption:"Best partner in crime 😄" },
+    { photo:"", caption:"Golden hour, golden memories 🌇" },
+    { photo:"", caption:"Never a dull moment with you 🎈" },
+    { photo:"", caption:"So many inside jokes, so little time 😂" },
+    { photo:"", caption:"Here's to many more like this 🥂" }
+  ],
+
+  letterShort: [
+    "Happy Birthday, Bestie! 🎉❤️",
+    "Today is all about celebrating the amazing person you are. Thank you for being such a wonderful friend, always bringing happiness, laughter, and positivity into my life.",
+    "Every memory we've shared, every conversation we've had, and every moment we've spent together means so much to me.",
+    "Keep smiling, keep shining, and never stop being the incredible person that everyone loves.",
+    "Happy Birthday once again! 🎂✨"
+  ],
+
+  letterFinal: [
+    "Happy Birthday, Bestie! 🎉",
+    "Today is all about celebrating the amazing person you are. Thank you for being my biggest supporter, my partner in crime, and the friend who makes even ordinary moments unforgettable.",
+    "Happy Birthday once again! ❤️🎂✨"
+  ]
+};
+/* ===================================================================== */
+
+// ============================================================
+// # ASLI CUSTOMER DATA YAHAN LOAD HOTA HAI #
+// URL mein "?id=..." dhoondo, Firestore se woh card ka data
+// mangao, aur CONFIG ki default values ko us data se replace
+// karo. "top-level await" use kiya hai isliye neeche ka poora
+// code (registerSlide waghera) tab tak nahi chalega jab tak
+// yeh data aa na jaaye — isliye customer ka data hamesha sahi
+// dikhega, kabhi "flash" nahi hoga default text ka.
+// ============================================================
+const urlParams = new URLSearchParams(window.location.search);
+const cardId = urlParams.get('id');
+
+if (cardId) {
+  try {
+    const cardSnap = await getDoc(doc(db, "cards", cardId));
+    if (cardSnap.exists()) {
+      const data = cardSnap.data();
+
+      if (data.name) CONFIG.personName = data.name;
+      if (data.from) CONFIG.from = data.from;
+      if (data.secretCode) CONFIG.secretCode = String(data.secretCode);
+      if (data.music) CONFIG.musicSrc = data.music;
+
+      // introPhoto/scratchPhoto are saved as one-item arrays (photoUrls-style)
+      if (Array.isArray(data.introPhoto) && data.introPhoto[0]) CONFIG.introPhoto = data.introPhoto[0];
+      if (Array.isArray(data.scratchPhoto) && data.scratchPhoto[0]) CONFIG.scratchPhoto = data.scratchPhoto[0];
+
+      // memoryPhotos is an array of however many photos the customer uploaded —
+      // pair each with a caption (re-using the default captions, cycling if needed)
+      if (Array.isArray(data.memoryPhotos) && data.memoryPhotos.length) {
+        const defaultCaptions = CONFIG.memories.map(m => m.caption);
+        CONFIG.memories = data.memoryPhotos.map((url, i) => ({
+          photo: url,
+          caption: defaultCaptions[i % defaultCaptions.length]
+        }));
+      }
+
+      // Customer's own message/letter (one line per paragraph) replaces
+      // both the short letter and the final letter, if they wrote one.
+      if (data.message) {
+        const paras = data.message.split('\n').map(p => p.trim()).filter(Boolean);
+        if (paras.length) {
+          CONFIG.letterShort = paras;
+          CONFIG.letterFinal = paras;
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Could not load this card\'s data — showing default preview instead.', err);
+  }
+}
+
+const $ = sel => document.querySelector(sel);
+const el = (tag, cls, html) => { const n = document.createElement(tag); if(cls) n.className = cls; if(html!==undefined) n.innerHTML = html; return n; };
+const ph = (label) => `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Poppins',sans-serif;font-size:.72rem;text-align:center;padding:8px;opacity:.85;">${label || 'Add your photo here'}</div>`;
+
+const slidesRoot = $('#slides');
+const dotsRoot = $('#dots');
+let order = [];      // slide ids in play order
+let current = 0;
+
+function registerSlide(id, buildFn){
+  const s = el('section', 'slide');
+  s.id = id;
+  buildFn(s);
+  slidesRoot.appendChild(s);
+  order.push(id);
+}
+
+function goTo(id){
+  const idx = order.indexOf(id);
+  if(idx === -1) return;
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  current = idx;
+  updateDots();
+}
+function next(){ if(current < order.length-1) goTo(order[current+1]); }
+
+function updateDots(){
+  dotsRoot.querySelectorAll('span').forEach((d,i)=>{
+    d.classList.toggle('done', i <= current);
+  });
+}
+
+/* ---------------------------------------------------------- 0. LOCK */
+registerSlide('lock', s=>{
+  s.innerHTML = `
+    <div class="eyebrow">A little surprise</div>
+    <h1 class="title">Enter Your Code</h1>
+    <p class="sub">Use your secret code to continue</p>
+    <div class="code-dots" id="codeDots"></div>
+    <div class="keypad" id="keypad"></div>
+    <div class="code-hint">Hint: it's a special date 🎂</div>
+  `;
+  const dots = s.querySelector('#codeDots');
+  for(let i=0;i<CONFIG.secretCode.length;i++) dots.appendChild(el('i'));
+  let entered = '';
+  const pad = s.querySelector('#keypad');
+  const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+  keys.forEach(k=>{
+    const b = el('button', k==='' ? 'wide':'', k);
+    if(k===''){ b.style.pointerEvents='none'; b.style.background='transparent'; }
+    b.addEventListener('click', ()=>{
+      if(k==='⌫'){ entered = entered.slice(0,-1); }
+      else if(k!==''){ if(entered.length < CONFIG.secretCode.length) entered += k; }
+      renderDots();
+      if(entered.length === CONFIG.secretCode.length){
+        setTimeout(()=> next(), 350);
+      }
+    });
+    pad.appendChild(b);
+  });
+  function renderDots(){
+    dots.querySelectorAll('i').forEach((d,i)=> d.classList.toggle('filled', i < entered.length));
+  }
+});
+
+/* ---------------------------------------------------------- 1. EXCITED */
+registerSlide('excited', s=>{
+  s.innerHTML = `
+    <div class="card">
+      <h1 class="title">Are You Excited for What's Next? <span class="script">💗</span></h1>
+      <div class="bounce-emoji">🐼</div>
+      <p class="sub" id="excitedSub">The surprise is waiting ✨</p>
+      <div class="row" style="justify-content:center; margin-top:8px;">
+        <button class="btn" id="yesBtn">YES ❤️</button>
+      </div>
+    </div>
+    <button class="btn ghost small" id="noBtn" style="margin-top:16px;">No 😢</button>
+  `;
+  let noCount = 0;
+  const subEl = s.querySelector('#excitedSub');
+  s.querySelector('#yesBtn').addEventListener('click', next);
+  s.querySelector('#noBtn').addEventListener('click', ()=>{
+    noCount++;
+    subEl.textContent = noCount === 1 ? "Hmm... are you sure? 🥺" : "One tap away from happiness ✨";
+  });
+});
+
+/* ---------------------------------------------------------- 2. QUIZ */
+CONFIG.quiz.forEach((item, qi)=>{
+  registerSlide('quiz'+qi, s=>{
+    const total = CONFIG.quiz.length;
+    let hearts = '';
+    for(let i=0;i<total;i++) hearts += `<span class="${i<=qi?'on':''}">${i<qi?'♥':'♡'}</span>`;
+    s.innerHTML = `
+      <div class="eyebrow" style="letter-spacing:.25em;">How well do you know me?</div>
+      <div class="hearts-row">${hearts}</div>
+      <div class="q-card">
+        <div class="q-label">Question ${qi+1} of ${total}</div>
+        <div class="q-text">${item.q}</div>
+      </div>
+      <div id="opts" style="width:100%;max-width:340px;"></div>
+      <div class="feedback" id="fb"></div>
+    `;
+    const optsRoot = s.querySelector('#opts');
+    const letters = ['A','B','C','D'];
+    item.options.forEach((opt, oi)=>{
+      const b = el('div','opt', `<span class="badge">${letters[oi]}</span><span>${opt}</span>`);
+      b.addEventListener('click', ()=>{
+        if(optsRoot.dataset.locked) return;
+        optsRoot.dataset.locked = '1';
+        const correct = oi === item.correct;
+        b.classList.add(correct ? 'correct':'wrong');
+        b.querySelector('.badge').textContent = correct ? '✓' : '✕';
+        if(!correct){
+          const correctEl = optsRoot.children[item.correct];
+          correctEl.classList.add('correct');
+          correctEl.querySelector('.badge').textContent = '✓';
+        }
+        s.querySelector('#fb').textContent = correct ? "Yes! ♥ That's right!" : "Hmm, not quite! 🤍";
+        setTimeout(next, 1100);
+      });
+      optsRoot.appendChild(b);
+    });
+  });
+});
+
+/* ---------------------------------------------------------- 3. INTRO */
+registerSlide('intro', s=>{
+  s.innerHTML = `
+    <div class="cake-emoji">🎂</div>
+    <h1 class="title" style="margin-top:8px;">Happy Birthday<br><span class="script" style="font-size:2.3rem;">${CONFIG.personName} 💖</span></h1>
+    <figure class="polaroid">
+      <div style="width:100%;aspect-ratio:3/4;${CONFIG.introPhoto?`background:url('${CONFIG.introPhoto}') center/cover;`:''}border-radius:2px;">${CONFIG.introPhoto?'':ph('Add intro photo')}</div>
+      <figcaption>${CONFIG.personName} ✨</figcaption>
+    </figure>
+    <button class="btn" style="margin-top:22px;" id="introNext">Continue ✨</button>
+  `;
+  s.querySelector('#introNext').addEventListener('click', next);
+});
+
+/* ---------------------------------------------------------- 4. SCRATCH */
+registerSlide('scratch', s=>{
+  s.innerHTML = `
+    <div class="eyebrow">A little gift</div>
+    <h1 class="title">Scratch to reveal</h1>
+    <div class="scratch-wrap">
+      <div class="scratch-under">${CONFIG.scratchPhoto?`<img src="${CONFIG.scratchPhoto}">`:ph('Add photo to reveal')}</div>
+      <canvas id="scratchCanvas"></canvas>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="scratchFill"></div></div>
+    <div class="progress-pct" id="scratchPct">Scratch to reveal your surprise… 0%</div>
+    <button class="btn" id="scratchNext" style="margin-top:18px;" disabled>Continue ✨</button>
+  `;
+  const wrap = s.querySelector('.scratch-wrap');
+  const canvas = s.querySelector('#scratchCanvas');
+  const ctx = canvas.getContext('2d');
+  const nextBtn = s.querySelector('#scratchNext');
+  let done = false;
+
+  function setupCanvas(){
+    const rect = wrap.getBoundingClientRect();
+    canvas.width = rect.width; canvas.height = rect.height;
+    const grad = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+    grad.addColorStop(0,'#e8c76a'); grad.addColorStop(.5,'#fff2c4'); grad.addColorStop(1,'#c99a2e');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.font = '600 14px Poppins'; ctx.fillStyle='rgba(122,31,61,.35)'; ctx.textAlign='center';
+    ctx.fillText('scratch here', canvas.width/2, canvas.height/2);
+  }
+  setupCanvas();
+  new ResizeObserver(()=>{ if(!done) setupCanvas(); }).observe(wrap);
+
+  function scratchAt(x,y){
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath(); ctx.arc(x,y,26,0,Math.PI*2); ctx.fill();
+  }
+  function calcProgress(){
+    const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let cleared = 0;
+    for(let i=3;i<data.length;i+=4*20){ if(data[i]===0) cleared++; }
+    const pct = Math.min(100, Math.round(cleared / (data.length/4/20) * 100));
+    s.querySelector('#scratchFill').style.width = pct+'%';
+    s.querySelector('#scratchPct').textContent = pct>=95 ? 'All revealed! 🎉' : `Ooh, keep going… ${pct}%`;
+    if(pct >= 65 && !done){
+      done = true;
+      canvas.style.transition='opacity .5s ease'; canvas.style.opacity='0';
+      setTimeout(()=> canvas.style.display='none', 500);
+      s.querySelector('#scratchFill').style.width='100%';
+      s.querySelector('#scratchPct').textContent = 'All revealed! 🎉';
+      nextBtn.disabled = false;
+    }
+  }
+  let drawing = false;
+  function pos(e){
+    const r = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX - r.left, y: t.clientY - r.top };
+  }
+  const start = e=>{ drawing = true; const p=pos(e); scratchAt(p.x,p.y); calcProgress(); };
+  const move = e=>{ if(!drawing) return; e.preventDefault(); const p=pos(e); scratchAt(p.x,p.y); calcProgress(); };
+  const end = ()=> drawing = false;
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', end);
+  canvas.addEventListener('touchstart', start, {passive:true});
+  canvas.addEventListener('touchmove', move, {passive:false});
+  canvas.addEventListener('touchend', end);
+
+  nextBtn.addEventListener('click', next);
+});
+
+/* ---------------------------------------------------------- 5. CANDLES */
+registerSlide('candles', s=>{
+  const N = 6;
+  s.innerHTML = `
+    <h1 class="title" id="candleTitle">Blow the candles! 💨</h1>
+    <p class="sub">Tap anywhere to blow</p>
+    <div class="cake-scene">
+      <div class="candles" id="candles"></div>
+      <div class="cake">🎂</div>
+    </div>
+    <div class="blow-hint" id="blowHint">${N} left — keep going!</div>
+  `;
+  const colors = ['#ff9fc0','#ffd98e','#a7d8ff','#c9b6ff','#ffb199','#8be0c0'];
+  const wrap = s.querySelector('#candles');
+  for(let i=0;i<N;i++){
+    const c = el('div','candle');
+    c.style.background = colors[i%colors.length];
+    c.innerHTML = `<div class="flame"></div>`;
+    wrap.appendChild(c);
+  }
+  let lit = N;
+  function blowOne(){
+    const candles = [...wrap.children].filter(c=>!c.classList.contains('out'));
+    if(!candles.length) return;
+    candles[candles.length-1].classList.add('out');
+    lit--;
+    const hint = s.querySelector('#blowHint');
+    if(lit>0){
+      hint.textContent = `${lit} left — keep going! 💨`;
+    } else {
+      s.querySelector('#candleTitle').textContent = 'Yay! Wish made 🎉';
+      hint.textContent = 'Make a wish… ✨';
+      setTimeout(next, 900);
+    }
+  }
+  s.addEventListener('click', blowOne);
+});
+
+/* ---------------------------------------------------------- 6. BALLOONS */
+registerSlide('balloons', s=>{
+  s.innerHTML = `
+    <h1 class="title">Pop every balloon, ${CONFIG.personName}! 🎈</h1>
+    <p class="sub">A secret word hides inside each one</p>
+    <div class="progress-track" style="max-width:260px;"><div class="progress-fill" id="balFill"></div></div>
+    <div class="progress-pct" id="balCount">0 / ${CONFIG.balloonWords.length} popped</div>
+    <div class="balloon-grid" id="balGrid"></div>
+    <div class="final-phrase" id="finalPhrase"></div>
+    <button class="btn" id="balNext" style="margin-top:10px;display:none;">Continue ✨</button>
+  `;
+  const grid = s.querySelector('#balGrid');
+  const colors = ['#f0629a','#f9b8cf','#d6237f','#ff7a63'];
+  let popped = 0;
+  CONFIG.balloonWords.forEach((word, i)=>{
+    const slot = el('div','balloon-slot');
+    const balloon = el('div','balloon');
+    balloon.style.background = `radial-gradient(circle at 35% 30%, #fff, ${colors[i%colors.length]} 60%)`;
+    const wordCard = el('div','word-card', word);
+    slot.appendChild(balloon);
+    slot.appendChild(wordCard);
+    grid.appendChild(slot);
+    balloon.addEventListener('click', ()=>{
+      if(balloon.classList.contains('pop')) return;
+      balloon.classList.add('pop');
+      setTimeout(()=>{ balloon.style.visibility='hidden'; wordCard.classList.add('show'); }, 150);
+      popped++;
+      s.querySelector('#balCount').textContent = `${popped} / ${CONFIG.balloonWords.length} popped`;
+      s.querySelector('#balFill').style.width = (popped/CONFIG.balloonWords.length*100)+'%';
+      if(popped === CONFIG.balloonWords.length){
+        s.querySelector('#finalPhrase').textContent = CONFIG.balloonWords.join(' ') + ' 💖';
+        s.querySelector('#balNext').style.display = 'inline-flex';
+      }
+    });
+  });
+  s.querySelector('#balNext').addEventListener('click', next);
+});
+
+/* ---------------------------------------------------------- 7. WISH (dark) */
+registerSlide('wish', s=>{
+  s.classList.add('dark-slide');
+  s.style.justifyContent='center';
+  s.innerHTML = `
+    <div class="script" style="font-size:2.2rem;">Make a wish</div>
+    <div class="wish-heart">❤️</div>
+    <p class="sub" style="margin-top:30px;">tap the heart when you're ready</p>
+  `;
+  s.querySelector('.wish-heart').addEventListener('click', next);
+});
+
+/* ---------------------------------------------------------- 8. HEART METER */
+registerSlide('heartmeter', s=>{
+  s.innerHTML = `
+    <div class="meter-banner">
+      <div class="h">♥ HEART METER ♥</div>
+      <div class="s">Fill the heart with your love!</div>
+    </div>
+    <p class="sub" style="margin-top:14px;">Tap tap tap… Fill the heart and unlock a special message!</p>
+    <div class="heart-card">
+      <div class="heart-pct" id="hmPct">0%</div>
+      <div class="big-heart" id="bigHeart"></div>
+      <div class="heart-msg" id="hmMsg">Tap to fill the heart with your love! 🤍</div>
+    </div>
+    <button class="tap-heart-btn" id="tapHeart">🤍</button>
+    <div class="keep-tapping">Keep tapping!</div>
+  `;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const container = s.querySelector('#bigHeart');
+  container.innerHTML = `
+    <svg viewBox="0 0 100 90">
+      <defs>
+        <clipPath id="heartClip"><path d="M50 85 C 10 55, 0 30, 22 14 C 36 4, 50 12, 50 26 C 50 12, 64 4, 78 14 C 100 30, 90 55, 50 85 Z"/></clipPath>
+      </defs>
+      <path d="M50 85 C 10 55, 0 30, 22 14 C 36 4, 50 12, 50 26 C 50 12, 64 4, 78 14 C 100 30, 90 55, 50 85 Z" fill="none" stroke="#e0518f" stroke-width="3"/>
+      <rect id="heartFill" x="0" y="90" width="100" height="90" fill="#e0518f" clip-path="url(#heartClip)"/>
+    </svg>`;
+  const fillRect = container.querySelector('#heartFill');
+  let pct = 0;
+  s.querySelector('#tapHeart').addEventListener('click', ()=>{
+    pct = Math.min(100, pct + (4 + Math.random()*3));
+    s.querySelector('#hmPct').textContent = Math.round(pct)+'%';
+    fillRect.setAttribute('y', 90 - (pct/100*90));
+    fillRect.setAttribute('height', pct/100*90);
+    const msg = s.querySelector('#hmMsg');
+    if(pct < 40) msg.textContent = 'Tap to fill the heart with your love! 🤍';
+    else if(pct < 80) msg.textContent = "Halfway there — you're doing amazing! 💗♥";
+    else if(pct < 100) msg.textContent = 'Almost full… one more tap! 💖';
+    else { msg.textContent = 'Heart is full! Unlocking your message… ✨'; setTimeout(next, 800); }
+  });
+});
+
+/* ---------------------------------------------------------- 9. ENVELOPE */
+registerSlide('envelope', s=>{
+  s.innerHTML = `
+    <div class="env-wrap">
+      <div class="eyebrow">Someone left this for you</div>
+      <div class="envelope" id="env">
+        <div class="env-body"></div>
+        <div class="env-flap"></div>
+        <div class="seal">♥</div>
+      </div>
+      <div class="env-tap-hint" id="envHint">Tap the seal to open it</div>
+    </div>
+  `;
+  s.querySelector('#env').addEventListener('click', function(){
+    if(this.classList.contains('open')) return;
+    this.classList.add('open');
+    s.querySelector('#envHint').textContent = 'Breaking the seal…';
+    setTimeout(next, 1100);
+  });
+});
+
+/* ---------------------------------------------------------- 10. LETTER (short) */
+registerSlide('letter', s=>{
+  s.innerHTML = `
+    <div class="eyebrow">A letter for you</div>
+    <div class="letter-paper">
+      ${CONFIG.letterShort.map(p=>`<p>${p}</p>`).join('')}
+    </div>
+    <button class="btn" id="letterNext" style="margin-top:18px;">Continue ✨</button>
+  `;
+  s.querySelector('#letterNext').addEventListener('click', next);
+});
+
+/* ---------------------------------------------------------- 11. MEMORIES CAROUSEL */
+registerSlide('memories', s=>{
+  s.innerHTML = `
+    <h1 class="title">Our Memories</h1>
+    <p class="sub" style="margin-top:-2px;">for ${CONFIG.personName} <span class="script">💕</span></p>
+    <div class="mem-count" id="memCount">1 of ${CONFIG.memories.length}</div>
+    <figure class="polaroid mem" id="memPolaroid"></figure>
+    <div class="swipe-hint">👉 Swipe to see more</div>
+    <div class="dots-mini" id="memDots"></div>
+    <div class="nav-row">
+      <button class="btn ghost" id="memBack">← Back</button>
+      <button class="btn" id="memNext2">Next →</button>
+    </div>
+  `;
+  let i = 0;
+  const dotsWrap = s.querySelector('#memDots');
+  CONFIG.memories.forEach(()=> dotsWrap.appendChild(el('i')));
+  const backBtn = s.querySelector('#memBack');
+
+  function render(){
+    const m = CONFIG.memories[i];
+    s.querySelector('#memCount').textContent = `${i+1} of ${CONFIG.memories.length}`;
+    s.querySelector('#memPolaroid').innerHTML = `
+      <div style="width:100%;aspect-ratio:3/4;${m.photo?`background:url('${m.photo}') center/cover;`:''}border-radius:2px;">${m.photo?'':ph('Add photo '+(i+1))}</div>
+      <figcaption>${m.caption}</figcaption>
+    `;
+    [...dotsWrap.children].forEach((d,di)=> d.classList.toggle('on', di===i));
+    backBtn.style.visibility = i===0 ? 'hidden' : 'visible';
+  }
+  render();
+  s.querySelector('#memNext2').addEventListener('click', ()=>{
+    if(i < CONFIG.memories.length-1){ i++; render(); }
+    else next();
+  });
+  backBtn.addEventListener('click', ()=>{ if(i>0){ i--; render(); } });
+
+  // basic swipe support
+  let sx=0;
+  s.addEventListener('touchstart', e=> sx = e.touches[0].clientX, {passive:true});
+  s.addEventListener('touchend', e=>{
+    const dx = e.changedTouches[0].clientX - sx;
+    if(Math.abs(dx) < 40) return;
+    if(dx < 0 && i < CONFIG.memories.length-1){ i++; render(); }
+    else if(dx > 0 && i > 0){ i--; render(); }
+  });
+});
+
+/* ---------------------------------------------------------- 12. VIDEO UNLOCK */
+registerSlide('video', s=>{
+  s.classList.add('video-slide');
+  s.innerHTML = `
+    <div class="video-box" id="videoBox">
+      <div class="play-circle" id="playCircle">▶</div>
+    </div>
+    <p style="color:#c98aa4;font-size:.85rem;">Tap to play</p>
+    <div class="video-bottom">
+      <span class="lock-tag" id="lockTag">🔒 Watch to unlock</span>
+      <button class="btn small" id="videoContinue" disabled>Continue</button>
+    </div>
+  `;
+  s.querySelector('#videoBox').addEventListener('click', function(){
+    this.innerHTML = `<div style="color:#fff;font-family:'Poppins';font-size:.8rem;padding:20px;text-align:center;">🎬 Playing your special video message…<br><br>(drop an &lt;video&gt; source in CONFIG to replace this)</div>`;
+    setTimeout(()=>{
+      s.querySelector('#lockTag').textContent = '💗 Unlocked!';
+      const btn = s.querySelector('#videoContinue');
+      btn.disabled = false;
+    }, 1600);
+  });
+  s.querySelector('#videoContinue').addEventListener('click', next);
+});
+
+/* ---------------------------------------------------------- 13. FINAL */
+registerSlide('final', s=>{
+  s.innerHTML = `
+    <div class="final-heart">❤</div>
+    <div class="eyebrow">A final message for you</div>
+    <h1 class="title">For ${CONFIG.personName}</h1>
+    <div class="final-card">
+      ${CONFIG.letterFinal.map(p=>`<p>${p}</p>`).join('')}
+    </div>
+    <button class="btn ghost small" id="replayBtn" style="margin-top:20px;">↺ Replay</button>
+    <div class="made-with">Made with ❤ for ${CONFIG.personName} — from ${CONFIG.from}</div>
+  `;
+  s.querySelector('#replayBtn').addEventListener('click', ()=> goTo(order[0]));
+});
+
+/* ---------------------------------------------------------- build dots + wire chrome */
+order.forEach(()=>{
+  const d = el('span'); d.appendChild(el('i'));
+  dotsRoot.appendChild(d);
+});
+goTo(order[0]);
+
+$('#closeBtn').addEventListener('click', ()=> goTo(order[0]));
+
+const audio = $('#bgAudio');
+const musicBtn = $('#musicBtn');
+if(CONFIG.musicSrc){ audio.src = CONFIG.musicSrc; }
+let playing = false;
+musicBtn.addEventListener('click', ()=>{
+  if(!CONFIG.musicSrc) { musicBtn.textContent = playing ? '♪' : '❚❚'; playing = !playing; return; }
+  if(playing){ audio.pause(); musicBtn.textContent = '▶'; }
+  else { audio.play().catch(()=>{}); musicBtn.textContent = '❚❚'; }
+  playing = !playing;
+});
+</script>
+</body>
+</html>
