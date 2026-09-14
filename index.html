@@ -405,16 +405,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-// Yeh EXACT wahi Firebase settings hain jo main website (Sorav Temps
-// store) mein hain — dono ek hi "cards" collection share karte hain,
-// isliye yeh values waisi hi rehni chahiye.
+// Yeh EXACT wahi Firebase settings hain jo Ditemps website (jahan
+// saveCardData() card ko save karta hai) mein hain — dono ek hi "cards"
+// collection share karte hain, isliye yeh values waisi hi rehni chahiye.
 const firebaseConfig = {
-  apiKey: "AIzaSyCRAO7UDddkFKvKbGGBBtkruD22NZnNozU",
-  authDomain: "soravtemps-d5419.firebaseapp.com",
-  projectId: "soravtemps-d5419",
-  storageBucket: "soravtemps-d5419.firebasestorage.app",
-  messagingSenderId: "889624784593",
-  appId: "1:889624784593:web:3a325467962639facedff0"
+  apiKey: "AIzaSyDneahIyDuurQB30uGrM0iC6xkDv71yUjo",
+  authDomain: "ditemps.firebaseapp.com",
+  projectId: "ditemps",
+  storageBucket: "ditemps.firebasestorage.app",
+  messagingSenderId: "14858245467",
+  appId: "1:14858245467:web:97cdf1133278e001c6367e"
 };
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
