@@ -343,11 +343,13 @@
   /* ---------- video unlock ---------- */
   .video-slide{ background:#000; color:#fff; justify-content:center; }
   .video-box{
-    width:100%; aspect-ratio:9/16; max-height:52vh; border-radius:16px;
-    background:linear-gradient(135deg,#241019,#3a0e20); position:relative;
+    width:min(100%, calc(52vh * 9 / 16)); aspect-ratio:9/16; max-height:52vh;
+    border-radius:16px; background:#000; position:relative;
     display:flex; align-items:center; justify-content:center; overflow:hidden;
-    margin-bottom:20px;
+    margin:0 auto 20px; flex-shrink:0;
   }
+  .video-box video{display:block;width:100%;height:100%;object-fit:contain;background:#000;}
+  .cake-img{display:block;width:min(66vw,260px);max-height:220px;object-fit:contain;margin:12px auto;}
   .play-circle{
     width:76px; height:76px; border-radius:50%; background:rgba(255,255,255,.14);
     border:1px solid rgba(255,255,255,.5); display:flex; align-items:center; justify-content:center;
@@ -429,10 +431,13 @@ const CONFIG = {
   personName: "Aditi",
   from: "Your Bestie",
   secretCode: "1403",              // 4-digit code for the lock screen
-  musicSrc: "",                     // optional: URL to a background mp3
+  musicSrc: "",                     // Firebase music URL; starts after the correct code
+  videoSrc: "https://files.catbox.moe/trk1vs.mp4", // default final video; Firebase can override
+  cakePng: "",                      // add your own transparent/cutout cake PNG URL here
 
-  introPhoto: "",                   // main "Happy Birthday" polaroid photo URL
-  scratchPhoto: "",                 // photo revealed under the scratch card
+  // Default Catbox photos; Firebase customer data overrides these.
+  introPhoto: "https://files.catbox.moe/qqzow9.jpg",
+  scratchPhoto: "https://files.catbox.moe/3teat.jpeg",
 
   quiz: [
     { q: "Who is the prettiest person in the world?",
@@ -450,16 +455,14 @@ const CONFIG = {
   balloonWords: ["You", "Are", "So", "Special"],
 
   memories: [
-    { photo:"", caption:"Every second with you is a gift 💕" },
-    { photo:"", caption:"This one is my favourite 🌸" },
-    { photo:"", caption:"Chaos, but make it cute 🤍" },
-    { photo:"", caption:"Pure magic, nothing less 💖" },
-    { photo:"", caption:"That trip we still talk about ✨" },
-    { photo:"", caption:"Best partner in crime 😄" },
-    { photo:"", caption:"Golden hour, golden memories 🌇" },
-    { photo:"", caption:"Never a dull moment with you 🎈" },
-    { photo:"", caption:"So many inside jokes, so little time 😂" },
-    { photo:"", caption:"Here's to many more like this 🥂" }
+    { photo:"https://files.catbox.moe/lgm8x3.jpg", caption:"Every second with you is a gift 💕" },
+    { photo:"https://files.catbox.moe/jf3a6m.webp", caption:"This one is my favourite 🌸" },
+    { photo:"https://files.catbox.moe/3vmi5c.jpg", caption:"Chaos, but make it cute 🤍" },
+    { photo:"https://files.catbox.moe/j6uif.jpg", caption:"Pure magic, nothing less 💖" },
+    { photo:"https://files.catbox.moe/ui3pz.jpg", caption:"That trip we still talk about ✨" },
+    { photo:"https://files.catbox.moe/o8k5g.jpg", caption:"Best partner in crime 😄" },
+    { photo:"https://files.catbox.moe/odgyz1.jpg", caption:"Golden hour, golden memories 🌇" },
+    { photo:"https://files.catbox.moe/pr4gy2.jpg", caption:"Never a dull moment with you 🎈" }
   ],
 
   letterShort: [
@@ -500,10 +503,13 @@ if (cardId) {
       if (data.from) CONFIG.from = data.from;
       if (data.secretCode) CONFIG.secretCode = String(data.secretCode);
       if (data.music) CONFIG.musicSrc = data.music;
+      if (data.video || data.videoSrc) CONFIG.videoSrc = data.video || data.videoSrc;
 
-      // introPhoto/scratchPhoto are saved as one-item arrays (photoUrls-style)
-      if (Array.isArray(data.introPhoto) && data.introPhoto[0]) CONFIG.introPhoto = data.introPhoto[0];
-      if (Array.isArray(data.scratchPhoto) && data.scratchPhoto[0]) CONFIG.scratchPhoto = data.scratchPhoto[0];
+      // Photos may be saved as one-item arrays (photoUrls-style) or as URL strings.
+      const introUrl = Array.isArray(data.introPhoto) ? data.introPhoto[0] : data.introPhoto;
+      const scratchUrl = Array.isArray(data.scratchPhoto) ? data.scratchPhoto[0] : data.scratchPhoto;
+      if (introUrl) CONFIG.introPhoto = introUrl;
+      if (scratchUrl) CONFIG.scratchPhoto = scratchUrl;
 
       // memoryPhotos is an array of however many photos the customer uploaded —
       // pair each with a caption (re-using the default captions, cycling if needed)
@@ -536,6 +542,24 @@ const ph = (label) => `<div style="width:100%;height:100%;display:flex;align-ite
 
 const slidesRoot = $('#slides');
 const dotsRoot = $('#dots');
+const audio = $('#bgAudio');
+const musicBtn = $('#musicBtn');
+let playing = false;
+
+function startMusicFromGesture(){
+  if(!CONFIG.musicSrc) return;
+  if(audio.src !== CONFIG.musicSrc) audio.src = CONFIG.musicSrc;
+  audio.play().then(()=>{
+    playing = true;
+    musicBtn.textContent = '❚❚';
+    musicBtn.classList.add('play');
+  }).catch(()=>{
+    // Some mobile browsers may still block playback; the music button remains available.
+    playing = false;
+    musicBtn.textContent = '▶';
+  });
+}
+
 let order = [];      // slide ids in play order
 let current = 0;
 
@@ -574,6 +598,7 @@ registerSlide('lock', s=>{
     <div class="code-hint">Hint: it's a special date 🎂</div>
   `;
   const dots = s.querySelector('#codeDots');
+  const hint = s.querySelector('.code-hint');
   for(let i=0;i<CONFIG.secretCode.length;i++) dots.appendChild(el('i'));
   let entered = '';
   const pad = s.querySelector('#keypad');
@@ -586,7 +611,15 @@ registerSlide('lock', s=>{
       else if(k!==''){ if(entered.length < CONFIG.secretCode.length) entered += k; }
       renderDots();
       if(entered.length === CONFIG.secretCode.length){
-        setTimeout(()=> next(), 350);
+        if(entered === CONFIG.secretCode){
+          hint.textContent = 'Unlocked 💖';
+          startMusicFromGesture();
+          setTimeout(()=> next(), 350);
+        } else {
+          hint.textContent = 'Incorrect code — try again';
+          entered = '';
+          setTimeout(renderDots, 450);
+        }
       }
     });
     pad.appendChild(b);
@@ -660,7 +693,7 @@ CONFIG.quiz.forEach((item, qi)=>{
 /* ---------------------------------------------------------- 3. INTRO */
 registerSlide('intro', s=>{
   s.innerHTML = `
-    <div class="cake-emoji">🎂</div>
+    ${CONFIG.cakePng ? `<img class="cake-img" src="${CONFIG.cakePng}" alt="Birthday cake">` : '<div class="cake-emoji">🎂</div>'}
     <h1 class="title" style="margin-top:8px;">Happy Birthday<br><span class="script" style="font-size:2.3rem;">${CONFIG.personName} 💖</span></h1>
     <figure class="polaroid">
       <div style="width:100%;aspect-ratio:3/4;${CONFIG.introPhoto?`background:url('${CONFIG.introPhoto}') center/cover;`:''}border-radius:2px;">${CONFIG.introPhoto?'':ph('Add intro photo')}</div>
@@ -767,7 +800,7 @@ registerSlide('candles', s=>{
     <p class="sub">Tap anywhere to blow</p>
     <div class="cake-scene">
       <div class="candles" id="candles"></div>
-      <div class="cake">🎂</div>
+      ${CONFIG.cakePng ? `<img class="cake-img" src="${CONFIG.cakePng}" alt="Birthday cake">` : '<div class="cake">🎂</div>'}
     </div>
     <div class="blow-hint" id="blowHint">${N} left — keep going!</div>
   `;
@@ -973,23 +1006,27 @@ registerSlide('video', s=>{
   s.classList.add('video-slide');
   s.innerHTML = `
     <div class="video-box" id="videoBox">
-      <div class="play-circle" id="playCircle">▶</div>
+      <video id="surpriseVideo" src="${CONFIG.videoSrc}" playsinline controls preload="metadata"></video>
     </div>
-    <p style="color:#c98aa4;font-size:.85rem;">Tap to play</p>
+    <p style="color:#c98aa4;font-size:.85rem;">Play your video message 💗</p>
     <div class="video-bottom">
       <span class="lock-tag" id="lockTag">🔒 Watch to unlock</span>
       <button class="btn small" id="videoContinue" disabled>Continue</button>
     </div>
   `;
-  s.querySelector('#videoBox').addEventListener('click', function(){
-    this.innerHTML = `<div style="color:#fff;font-family:'Poppins';font-size:.8rem;padding:20px;text-align:center;">🎬 Playing your special video message…<br><br>(drop an &lt;video&gt; source in CONFIG to replace this)</div>`;
-    setTimeout(()=>{
-      s.querySelector('#lockTag').textContent = '💗 Unlocked!';
-      const btn = s.querySelector('#videoContinue');
-      btn.disabled = false;
-    }, 1600);
+  const video = s.querySelector('#surpriseVideo');
+  const playBtn = s.querySelector('#videoContinue');
+  video.addEventListener('play', ()=>{
+    s.querySelector('#lockTag').textContent = '💗 Playing…';
   });
-  s.querySelector('#videoContinue').addEventListener('click', next);
+  video.addEventListener('ended', ()=>{
+    s.querySelector('#lockTag').textContent = '💗 Unlocked!';
+    playBtn.disabled = false;
+  });
+  video.addEventListener('error', ()=>{
+    s.querySelector('#lockTag').textContent = 'Video could not load';
+  });
+  playBtn.addEventListener('click', next);
 });
 
 /* ---------------------------------------------------------- 13. FINAL */
@@ -1016,15 +1053,25 @@ goTo(order[0]);
 
 $('#closeBtn').addEventListener('click', ()=> goTo(order[0]));
 
-const audio = $('#bgAudio');
-const musicBtn = $('#musicBtn');
-if(CONFIG.musicSrc){ audio.src = CONFIG.musicSrc; }
-let playing = false;
+if(CONFIG.musicSrc) audio.src = CONFIG.musicSrc;
+audio.addEventListener('pause', ()=>{
+  playing = false;
+  musicBtn.textContent = '▶';
+});
+audio.addEventListener('play', ()=>{
+  playing = true;
+  musicBtn.textContent = '❚❚';
+});
 musicBtn.addEventListener('click', ()=>{
-  if(!CONFIG.musicSrc) { musicBtn.textContent = playing ? '♪' : '❚❚'; playing = !playing; return; }
-  if(playing){ audio.pause(); musicBtn.textContent = '▶'; }
-  else { audio.play().catch(()=>{}); musicBtn.textContent = '❚❚'; }
-  playing = !playing;
+  if(!CONFIG.musicSrc) {
+    musicBtn.textContent = '♪';
+    return;
+  }
+  if(playing){
+    audio.pause();
+  } else {
+    startMusicFromGesture();
+  }
 });
 </script>
 </body>
